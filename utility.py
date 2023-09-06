@@ -36,25 +36,26 @@ class CustomPromptTemplate(StringPromptTemplate):
 
 
 class CustomOutputParser(AgentOutputParser):
-
+    
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
         # Check if agent should finish
         if "Final Answer:" in llm_output:
             return AgentFinish(
-                # Return values is generally always a dictionary with a single `output` key
-                # It is not recommended to try anything else at the moment :)
-                return_values={"output": llm_output.split("Final Answer:")[-1].strip()},
+                # Return the original llm_output without modification
+                return_values={"output": llm_output},
                 log=llm_output,
             )
         # Parse out the action and action input
         regex = r"Action\s*\d*\s*:(.*?)\nAction\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)"
         match = re.search(regex, llm_output, re.DOTALL)
         if not match:
-            raise OutputParserException(f"Could not parse LLM output: `{llm_output}`")
+            raise ValueError(f"Could not parse LLM output: `{llm_output}`")
         action = match.group(1).strip()
         action_input = match.group(2)
-        # Return the action and action input
+        # Return the action and action input along with the original llm_output
         return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)
+
+
     
 
 def search(query):
@@ -84,7 +85,9 @@ def generate(query):
     messages=[
         {
         "role": "user",
-        "content": f"You are a very smart Legal Assitant who takes the name of a legal document as an input and based on that you generate a full fledged template according to Indian law. Your output is a complete document without any prefixes. Add the sentence  at the end 'Replace all placeholders with user detail'. Following is the user query:\n{query}"
+        "content": f"""You are a very smart Legal Assitant who takes the name of a legal document as an input and based on that you generate a full fledged template according to Indian law. 
+          Your output is a complete document without any prefixes. Add the following sentence at the end \n'Replace the placeholders (and blanks) with user's details.'. 
+          Following is the user query:\n{query}"""
         }
     ],
     temperature=0,
@@ -103,7 +106,10 @@ def annotate(query):
     messages=[
         {
         "role": "user",
-        "content": f"You are a very smart Legal Assitant who takes the user details and a legal document as an input and based on that you regenerate the template with user details. Your output is correct and you dont manipulate the legal document or the user input. Following is the legal document and user detail:\n{query}"
+        "content": f"""You are a very smart Legal Assitant who takes the user details and a legal document 
+        as an input and based on that you regenerate the template with user details. Your output is correct 
+        and you dont manipulate the legal document or the user input. Following is the legal document and 
+        user detail:\n{query}"""
         }
     ],
     temperature=0,
@@ -114,3 +120,4 @@ def annotate(query):
     )
     print("Intermediate response", response["choices"][0]["message"]["content"])
     return response["choices"][0]["message"]["content"]
+

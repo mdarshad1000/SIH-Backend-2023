@@ -71,7 +71,7 @@ prompt_with_history = CustomPromptTemplate(
 )
 
 
-llm = OpenAI(temperature=0, openai_api_key=os.getenv('OPENAI_API_KEY'))
+llm = OpenAI(temperature=0, model_name="gpt-3.5-turbo-16k", openai_api_key=os.getenv('OPENAI_API_KEY'))
 llm_chain = LLMChain(llm=llm, prompt=prompt_with_history)
 
 tool_names = [tool.name for tool in tools]
@@ -83,8 +83,9 @@ agent = LLMSingleActionAgent(
 )
 
 
-memory=ConversationBufferWindowMemory(k=2)
+memory=ConversationBufferWindowMemory(k=4)
 
 agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory)
 
-agent_executor.run("I need to rent a shop?")
+agent_executor.run("I need to get a mutual divorce from my wife?")
+
