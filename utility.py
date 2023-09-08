@@ -56,8 +56,6 @@ class CustomOutputParser(AgentOutputParser):
         return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)
 
 
-    
-
 def search(query):
     # print("query is", query)
     response = openai.ChatCompletion.create(
@@ -98,26 +96,3 @@ def generate(query):
     )
     print("Intermediate response", response["choices"][0]["message"]["content"])
     return response["choices"][0]["message"]["content"]
-
-def annotate(query):
-    print("query is", query)
-    response = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    messages=[
-        {
-        "role": "user",
-        "content": f"""You are a very smart Legal Assitant who takes the user details and a legal document 
-        as an input and based on that you regenerate the template with user details. Your output is correct 
-        and you dont manipulate the legal document or the user input. Following is the legal document and 
-        user detail:\n{query}"""
-        }
-    ],
-    temperature=0,
-    max_tokens=256,
-    top_p=1,
-    frequency_penalty=0,
-    presence_penalty=0
-    )
-    print("Intermediate response", response["choices"][0]["message"]["content"])
-    return response["choices"][0]["message"]["content"]
-
