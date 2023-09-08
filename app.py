@@ -14,10 +14,13 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app,)
 
+
 @app.route('/')
 def home():
     return "Flask up and running!"
 
+
+# for legal ai upload pdf 
 @cross_origin('*')
 @app.route('/legal-ai-upload')
 def legal_ai_upload():
@@ -40,6 +43,8 @@ def legal_ai_upload():
 
         return {"pdf_ID":pdf_ID}
 
+
+# to chat with the uploaded legal pdf
 @cross_origin(supports_credentials=True)
 @app.route('/legal-ai-chat')
 def legal_ai_chat():
@@ -47,7 +52,8 @@ def legal_ai_chat():
     query = request.json["message"] if request.json["message"] else ""
 
     if os.path.exists(f'static/index/{f_path}.json'):
-        print("Loading index loop")
+        print("Loading Index loop")
+
         # load from disk
         loaded_index = GPTSimpleVectorIndex.load_from_disk(f'static/index/{f_path}.json')
         response = loaded_index.query(query, verbose=True, response_mode="default")
@@ -55,7 +61,8 @@ def legal_ai_chat():
         return {"answer":final_answer}
     
     else:
-        print("Creating index loop")
+        print("Creating Index loop")
+        
         # Set path of indexed jsons
         index_path = f"static/index/{f_path}.json"
 
@@ -77,6 +84,8 @@ def legal_ai_chat():
         final_answer = str(response)
 
         return {"answer":final_answer}
+    
+
 
 
 
