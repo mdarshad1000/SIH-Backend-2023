@@ -1,11 +1,13 @@
 from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent
 from langchain import OpenAI, LLMChain
 from langchain.tools import HumanInputRun
-from utility import CustomOutputParser, CustomPromptTemplate, search, annotate, generate
+from utility import CustomOutputParser, CustomPromptTemplate, search, generate
 from langchain.memory import ConversationBufferWindowMemory
 import os
 from dotenv import load_dotenv
-load_dotenv
+
+load_dotenv()
+
 # Set up the base template
 template_with_history = """You are a Legal Assistant whose task is to generate a personalised canonical and high quality legal document.
 You need to generate the legal document with the user's detail which is used to address the user's need. Ask targeted questions from the user.
@@ -37,7 +39,6 @@ output_parser = CustomOutputParser()
 human_tool = HumanInputRun()
 
 # Define which tools the agent can use to answer user queries
-
 tools = [
     Tool(
         name = "Search",
@@ -47,18 +48,13 @@ tools = [
     Tool(
         name = "Ask Human",
         func = human_tool.run,
-        description = "useful for when you have obtained the template of the legal document and want to fill the unknown values so take input from human"
+        description = "useful only for when you have obtained the entire template of the legal document and want to fill the unknown values so take input from human"
     ),
     Tool(
         name = "Get Template",
         func = generate,
         description = "useful for when you need to get a legal document template."
-    ),
-    # Tool(
-    #     name='Generate legal document',
-    #     func = generate,
-    #     description="Useful when you have the legal document and want to generate the legal document with the user details"
-    # )
+    )
 ]
 
 
@@ -87,5 +83,5 @@ memory=ConversationBufferWindowMemory(k=4)
 
 agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory)
 
-agent_executor.run("I need to get a mutual divorce from my wife?")
+agent_executor.run()
 
