@@ -1,10 +1,10 @@
-from flask import Flask, request
-from generate import agent_executor
-from dotenv import load_dotenv 
-from urllib.parse import urlparse
 from gpt_index import GPTSimpleVectorIndex, SimpleDirectoryReader, LLMPredictor
 from langchain import OpenAI
+from generate import agent_executor
+from flask import Flask, request
 from flask_cors import CORS, cross_origin
+from dotenv import load_dotenv 
+from urllib.parse import urlparse
 import requests
 import os
 import uuid
