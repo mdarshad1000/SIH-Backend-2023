@@ -1,14 +1,18 @@
 from gpt_index import GPTSimpleVectorIndex, SimpleDirectoryReader, LLMPredictor
 from langchain import OpenAI
+from langchain.chat_models import ChatOpenAI
+from langchain.document_loaders import DirectoryLoader
+from langchain.chains.summarize import load_summarize_chain
 # from generate import agent_executor
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
-from dotenv import load_dotenv 
-from utility import parse_final_answer
+from dotenv import load_dotenv
+# from utility import parse_final_answer
 from urllib.parse import urlparse
 import requests
 import os
 import uuid
+import openai
 
 load_dotenv()
 
@@ -21,12 +25,13 @@ def home():
     return "Flask up and running!"
 
 
-# for legal ai upload pdf 
+# for legal ai upload pdf
 @cross_origin('*')
 @app.route('/legal-ai-upload', methods=['GET', 'POST'])
 def legal_ai_upload():
 
     if request.method == 'POST':
+
         url = request.json['pdfurl']
         parsedurl = urlparse(url)
 
@@ -42,7 +47,19 @@ def legal_ai_upload():
             with open(f'static/pdfs/{pdf_ID}/{pdf}.pdf', 'wb') as f:
                 f.write(response.content)
 
-        return {"pdf_ID":pdf_ID}
+        # summarize
+        loader = DirectoryLoader(f"static/pdfs/{pdf_ID}/")
+        docs = loader.load()
+
+        llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-16k")
+        chain = load_summarize_chain(llm, chain_type="stuff")
+
+        summary = chain.run(docs)
+
+        return {
+            "pdf_ID": pdf_ID,
+            "summary": summary
+        }
 
 
 # to chat with the uploaded legal pdf
@@ -56,14 +73,16 @@ def legal_ai_chat():
         print("Loading Index loop")
 
         # load from disk
-        loaded_index = GPTSimpleVectorIndex.load_from_disk(f'static/index/{pdf_ID}.json')
-        response = loaded_index.query(query, verbose=True, response_mode="default")
+        loaded_index = GPTSimpleVectorIndex.load_from_disk(
+            f'static/index/{pdf_ID}.json')
+        response = loaded_index.query(
+            query, verbose=True, response_mode="default")
         final_answer = str(response)
-        return {"answer":final_answer}
-    
+        return {"answer": final_answer}
+
     else:
         print("Creating Index loop")
-        
+
         # Set path of Indexed jsons
         index_path = f"static/index/{pdf_ID}.json"
 
@@ -76,21 +95,20 @@ def legal_ai_chat():
         index.save_to_disk(index_path)
 
         # define the LLM to be used
-        llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="text-davinci-003"))
+        llm_predictor = LLMPredictor(llm=OpenAI(
+            temperature=0, model_name="text-davinci-003"))
 
         # Load from Disk
-        loaded_index = GPTSimpleVectorIndex.load_from_disk(index_path, llm_predictor=llm_predictor)
-        response = loaded_index.query(query, verbose=True, response_mode="default")
+        loaded_index = GPTSimpleVectorIndex.load_from_disk(
+            index_path, llm_predictor=llm_predictor)
+        response = loaded_index.query(
+            query, verbose=True, response_mode="default")
 
         final_answer = str(response)
 
-        return {"answer":final_answer}
+        return {"answer": final_answer}
 
 
-
-@app.route('/summary', methods=['POST', 'GET'])
-def summarise():
-    pass
 # @app.route('/chat', methods=['POST', 'GET'])
 # def generate_chat():
 #     query = request.json['query'] if request.json['query'] else ''
@@ -99,7 +117,5 @@ def summarise():
 #     final_answer = parse_final_answer(answer)
 #     print(final_answer)
 #     return {"response": final_answer}
-
-
 if __name__ == '__main__':
     app.run(debug=True)
