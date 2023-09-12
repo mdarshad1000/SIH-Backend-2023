@@ -1,6 +1,6 @@
 from gpt_index import GPTSimpleVectorIndex, SimpleDirectoryReader, LLMPredictor
 from langchain import OpenAI
-from generate import agent_executor
+# from generate import agent_executor
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv 
@@ -87,14 +87,14 @@ def legal_ai_chat():
         return {"answer":final_answer}
 
 
-@app.route('/chat', methods=['POST', 'GET'])
-def generate_chat():
-    query = request.json['query'] if request.json['query'] else ''
-    # put the logic here for intermediate code
-    answer = agent_executor.run(query)
-    final_answer = parse_final_answer(answer)
-    print(final_answer)
-    return {"response": final_answer}
+# @app.route('/chat', methods=['POST', 'GET'])
+# def generate_chat():
+#     query = request.json['query'] if request.json['query'] else ''
+#     # put the logic here for intermediate code
+#     answer = agent_executor.run(query)
+#     final_answer = parse_final_answer(answer)
+#     print(final_answer)
+#     return {"response": final_answer}
 
 
 if __name__ == '__main__':
