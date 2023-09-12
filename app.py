@@ -49,10 +49,10 @@ def legal_ai_upload():
 @cross_origin(supports_credentials=True)
 @app.route('/legal-ai-chat')
 def legal_ai_chat():
-    f_path = request.json["f_path"] if request.json["f_path"] else ""
+    pdf_ID = request.json["pdf_ID"] if request.json["pdf_ID"] else ""
     query = request.json["message"] if request.json["message"] else ""
 
-    if os.path.exists(f'static/index/{f_path}.json'):
+    if os.path.exists(f'static/index/{pdf_ID}.json'):
         print("Loading Index loop")
 
         # load from disk
