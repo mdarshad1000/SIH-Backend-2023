@@ -47,7 +47,7 @@ def legal_ai_upload():
 
 # to chat with the uploaded legal pdf
 @cross_origin(supports_credentials=True)
-@app.route('/legal-ai-chat')
+@app.route('/legal-ai-chat', methods=['POST', 'GET'])
 def legal_ai_chat():
     pdf_ID = request.json["pdf_ID"] if request.json["pdf_ID"] else ""
     query = request.json["message"] if request.json["message"] else ""
