@@ -1,7 +1,8 @@
 from langchain.agents import Tool, AgentOutputParser
 from langchain.prompts import StringPromptTemplate
 from typing import List, Union
-from langchain.schema import AgentAction, AgentFinish, OutputParserException
+from langchain.schema import AgentAction, AgentFinish
+from langchain.tools import HumanInputRun
 from dotenv import load_dotenv
 import openai
 import re
@@ -36,7 +37,7 @@ class CustomPromptTemplate(StringPromptTemplate):
 
 
 class CustomOutputParser(AgentOutputParser):
-    
+
     def parse(self, llm_output: str) -> Union[AgentAction, AgentFinish]:
         # Check if agent should finish
         if "Final Answer:" in llm_output:
@@ -56,14 +57,16 @@ class CustomOutputParser(AgentOutputParser):
         return AgentAction(tool=action, tool_input=action_input.strip(" ").strip('"'), log=llm_output)
 
 
-def search(query):
+def search_name(query):
     # print("query is", query)
     response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=[
         {
         "role": "user",
-        "content": f"You are a very smart Legal Assitant who takes a sentence as input and based on that you generate the exact name of the legal documnet (Power of Attorney, Will Testament, Sale and Purchase agreement etc.) which helps their cause. You follow brevity and your response is very small. Following is the user query:\n{query}"
+        "content": f"""You are a very smart Legal Assitant who takes a sentence as input and based on that you generate the exact name of the 
+        legal documnet (Power of Attorney, Will Testament, Sale and Purchase agreement etc.) which helps their cause. You follow brevity and your response is very small. 
+        Following is the user query:\n{query}"""
         }
     ],
     temperature=0,
@@ -77,14 +80,14 @@ def search(query):
 
 
 def generate(query):
-    print("query is", query)
+    # print("query is", query)
     response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     messages=[
         {
         "role": "user",
         "content": f"""You are a very smart Legal Assitant who takes the name of a legal document as an input and based on that you generate a full fledged template according to Indian law. 
-          Your output is a complete document without any prefixes. Add the following sentence at the end \n'Replace the placeholders (and blanks) with user's details.'. 
+          Your output is a complete document without any prefixes.  
           Following is the user query:\n{query}"""
         }
     ],
@@ -94,5 +97,20 @@ def generate(query):
     frequency_penalty=0,
     presence_penalty=0
     )
-    print("Intermediate response", response["choices"][0]["message"]["content"])
+    # print("Intermediate response", response["choices"][0]["message"]["content"])
     return response["choices"][0]["message"]["content"]
+
+
+def parse_final_answer(final_answer):
+    start = final_answer.find("Final Answer:")
+    if start != -1:
+        final_answer = final_answer[start+14:]
+    else:
+        {"Final Answer not found"}
+    return final_answer
+
+
+# def human_tool():
+    
+#     url = requests.request()
+#     temp = HumanInputRun(intermediate)

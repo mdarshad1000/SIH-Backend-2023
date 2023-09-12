@@ -4,6 +4,7 @@ from generate import agent_executor
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv 
+from utility import parse_final_answer
 from urllib.parse import urlparse
 import requests
 import os
@@ -63,7 +64,7 @@ def legal_ai_chat():
     else:
         print("Creating Index loop")
         
-        # Set path of indexed jsons
+        # Set path of Indexed jsons
         index_path = f"static/index/{f_path}.json"
 
         documents = SimpleDirectoryReader(f'static/pdfs/{f_path}').load_data()
@@ -71,45 +72,28 @@ def legal_ai_chat():
         # builds an index over the documents in the data folder
         index = GPTSimpleVectorIndex(documents)
 
-        # save the index to disk
+        # save the Index to disk
         index.save_to_disk(index_path)
 
-        # define the llm to be used
+        # define the LLM to be used
         llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="text-davinci-003"))
 
-        # load from disk
+        # Load from Disk
         loaded_index = GPTSimpleVectorIndex.load_from_disk(index_path, llm_predictor=llm_predictor)
         response = loaded_index.query(query, verbose=True, response_mode="default")
 
         final_answer = str(response)
 
         return {"answer":final_answer}
-    
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@app.route('/chat')
-def chat():
-
+@app.route('/chat', methods=['POST', 'GET'])
+def generate_chat():
     query = request.json['query'] if request.json['query'] else ''
     # put the logic here for intermediate code
-    final_answer = agent_executor.run(query)
+    answer = agent_executor.run(query)
+    final_answer = parse_final_answer(answer)
+    print(final_answer)
     return {"response": final_answer}
 
 

@@ -9,7 +9,7 @@
 pip install -r requirements.txt
 ```
 
-2. Create a `.env` file in the root directory and your openai API Key
+2. Create a `.env` file in the root directory and add your openai API Key.
 ```
 OPENAI_API_KEY=your_api_key
 ```
