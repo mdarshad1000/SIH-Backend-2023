@@ -23,7 +23,7 @@ def home():
 
 # for legal ai upload pdf 
 @cross_origin('*')
-@app.route('/legal-ai-upload')
+@app.route('/legal-ai-upload', methods=['GET', 'POST'])
 def legal_ai_upload():
 
     if request.method == 'POST':
@@ -56,7 +56,7 @@ def legal_ai_chat():
         print("Loading Index loop")
 
         # load from disk
-        loaded_index = GPTSimpleVectorIndex.load_from_disk(f'static/index/{f_path}.json')
+        loaded_index = GPTSimpleVectorIndex.load_from_disk(f'static/index/{pdf_ID}.json')
         response = loaded_index.query(query, verbose=True, response_mode="default")
         final_answer = str(response)
         return {"answer":final_answer}
@@ -65,9 +65,9 @@ def legal_ai_chat():
         print("Creating Index loop")
         
         # Set path of Indexed jsons
-        index_path = f"static/index/{f_path}.json"
+        index_path = f"static/index/{pdf_ID}.json"
 
-        documents = SimpleDirectoryReader(f'static/pdfs/{f_path}').load_data()
+        documents = SimpleDirectoryReader(f'static/pdfs/{pdf_ID}').load_data()
 
         # builds an index over the documents in the data folder
         index = GPTSimpleVectorIndex(documents)
