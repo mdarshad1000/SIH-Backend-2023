@@ -87,6 +87,10 @@ def legal_ai_chat():
         return {"answer":final_answer}
 
 
+
+@app.route('/summary', methods=['POST', 'GET'])
+def summarise():
+    pass
 # @app.route('/chat', methods=['POST', 'GET'])
 # def generate_chat():
 #     query = request.json['query'] if request.json['query'] else ''
