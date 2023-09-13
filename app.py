@@ -7,7 +7,6 @@ from langchain.chains.summarize import load_summarize_chain
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from dotenv import load_dotenv
-# from utility import parse_final_answer
 from urllib.parse import urlparse
 import requests
 import os
@@ -109,6 +108,52 @@ def legal_ai_chat():
         return {"answer": final_answer}
 
 
+@cross_origin(supports_credentials=True)
+@app.route('/constitution', methods=['POST', 'GET'])
+def constitution():
+
+    if request.method == 'POST':
+
+        question = request.json['question']
+        if os.path.exists('docs/index/constitution.json'):
+            # load from disk
+            loaded_index = GPTSimpleVectorIndex.load_from_disk(
+                'docs/index/constitution.json')
+            response = loaded_index.query(
+                question, verbose=True, response_mode="default")
+            final_answer = str(response)
+            return {"answer": final_answer}
+
+        else:
+            print("Creating Index loop")
+
+            # Set path of Indexed jsons
+            index_path = f"docs/index/constitution.json"
+
+            documents = SimpleDirectoryReader(f'docs/pdf/').load_data()
+
+            # builds an index over the documents in the data folder
+            index = GPTSimpleVectorIndex(documents)
+
+            # save the Index to disk
+            index.save_to_disk(index_path)
+
+            # define the LLM to be used
+            llm_predictor = LLMPredictor(llm=OpenAI(
+                temperature=0, model_name="gpt-turbo-3.5"))
+
+            # Load from Disk
+            loaded_index = GPTSimpleVectorIndex.load_from_disk(
+                index_path, llm_predictor=llm_predictor)
+            response = loaded_index.query(
+                question, verbose=True, response_mode="default")
+
+            final_answer = str(response)
+
+            return {"answer": final_answer}
+
+
+
 # @app.route('/chat', methods=['POST', 'GET'])
 # def generate_chat():
 #     query = request.json['query'] if request.json['query'] else ''
@@ -117,5 +162,7 @@ def legal_ai_chat():
 #     final_answer = parse_final_answer(answer)
 #     print(final_answer)
 #     return {"response": final_answer}
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='127.0.0.1', port=5000)
