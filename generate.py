@@ -1,4 +1,4 @@
-from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent
+from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, agent
 from langchain import OpenAI, LLMChain
 from langchain.tools import HumanInputRun
 from utility import CustomOutputParser, CustomPromptTemplate, search_name, generate
@@ -9,34 +9,30 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Set up the base template
-template_with_history = """You are a Legal Assistant whose task is to generate a personalised and high quality legal document. 
-You will generate the document in three steps:
-1. You will take user's problem as input and analyse it to get the name of the legal document required.
-2. You will then generate a legal document tempelate based on the name in which you will have to replace the placeholders and blanks. 
-3. You you will replace the palceholders and blanks with user's details.
-Ask very detailed and easy questions from the user. 
-
+template_with_history = """You are a Legal Assistant whose task is to generate a personalised canonical and high quality legal document.
+You need to generate the legal document with the user's detail which is used to address the user's need. Ask targeted questions from the user.
 You have access to the following tools:
 {tools}
 
 Use the following format:
+
 Question: the input question you must understand and eventually generate a legal document for it.
 Thought: you should always think about what to do
 Action: the action to take, should be one of [{tool_names}]
 Action Input: the input to the action
 Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times until you have replaced all the placeholders and blanks in the template)
+... (this Thought/Action/Action Input/Observation can repeat N times)
 Thought: I now know the final answer
-Final Answer: The Final answer is just the legal template with user details. Make sure there is no other sentence.
+Final Answer: the final answer is a full fledged legal document and nothing else.
 
-Begin! Remember to only generate Legal Documents which the user has asked. 
+Begin! Remember to only generate Legal Documents which the user has asked. You should ask human for their details which you need while generating the legal document.
 
 Previous conversation history:
 {history}
 
 New question: {input}
 {agent_scratchpad}
-"""    
+"""      
 
 output_parser = CustomOutputParser()
 
@@ -87,4 +83,4 @@ memory=ConversationBufferWindowMemory(k=4)
 
 agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory)
 
-agent_executor.run("I fight with my wife very often")
+agent_executor.run("I want to rent a house")
