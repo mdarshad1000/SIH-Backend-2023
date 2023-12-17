@@ -153,7 +153,6 @@ def constitution():
             return {"answer": final_answer}
 
 
-
 # @app.route('/chat', methods=['POST', 'GET'])
 # def generate_chat():
 #     query = request.json['query'] if request.json['query'] else ''
